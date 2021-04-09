@@ -113,10 +113,15 @@
                     <input type="checkbox" aria-label="Checkbox for following text input" name="id[]" value="{{$trabalho->id}}">                
                   </td>
                   <td>
-                    @if (!(empty($trabalho->arquivo->nome)))
-                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id])}}">
-                          {{$trabalho->titulo}}
+                    @if ($trabalho->arquivo()->where('versaoFinal', true)->first() != null)
+                      <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}">
+                        {{$trabalho->titulo}}
+                      </a>
+                      @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)
+                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                          <img class="" src="{{asset('img/icons/file-download-solid-primary-color.svg')}}" style="width:18px">
                         </a>
+                      @endif
                     @else
                       {{$trabalho->titulo}}
                     @endif

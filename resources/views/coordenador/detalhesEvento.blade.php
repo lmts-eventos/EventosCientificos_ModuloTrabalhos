@@ -1549,7 +1549,7 @@
                     $('#cards_com_trabalhos').html("");
                     var cards = "";
                     $.each(result, function(i, obj) {
-                        if (obj.rota_download != '#') {
+                        if (obj.rota_download != '#' && obj.rota_download != '#') {
                             cards +=    "<div class='card bg-light mb-3' style='width: 20rem;'>"+
                                         "<div class='card-body'>" +
                                             "<h5 class='card-title'>" + obj.titulo +"</h5>" +
@@ -1559,7 +1559,21 @@
                                             "<label for='modalidade'>Modalidade:</label>" +
                                             "<p id='modalidade'>"+ obj.modalidade +"</p>" +
                                             "<a href='#' class='card-link' data-toggle='modal' data-target='#modalResultados"+ obj.id +"'>Resultado</a>" +
-                                            "<a href='"+obj.rota_download+"' class='card-link'>Baixar</a>" +    
+                                            "<a href='"+obj.rota_download+"' class='card-link'>Baixar</a>" +  
+                                            "<a href='"+obj.rota_download_corrigido+"' class='card-link'>Baixar corrigido</a>" +  
+                                        "</div>" +
+                                    "</div>";
+                        } else if (obj.rota_download != '#' && obj.rota_download == '#') {
+                            cards +=    "<div class='card bg-light mb-3' style='width: 20rem;'>"+
+                                        "<div class='card-body'>" +
+                                            "<h5 class='card-title'>" + obj.titulo +"</h5>" +
+                                            "<h6 class='card-subtitle mb-2 text-muted'>" + obj.nome + "</h6>" +
+                                            "<label for='area'>Área:</label>" +
+                                            "<p id='area'>" + obj.area +"</p>" +
+                                            "<label for='modalidade'>Modalidade:</label>" +
+                                            "<p id='modalidade'>"+ obj.modalidade +"</p>" +
+                                            "<a href='#' class='card-link' data-toggle='modal' data-target='#modalResultados"+ obj.id +"'>Resultado</a>" +
+                                            "<a href='"+obj.rota_download+"' class='card-link'>Baixar</a>" +  
                                         "</div>" +
                                     "</div>";
                         } else {

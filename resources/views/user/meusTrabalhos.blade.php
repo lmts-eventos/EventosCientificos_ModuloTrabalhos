@@ -9,7 +9,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header" style="background-color: #114048ff; color: white;">
-          <h5 class="modal-title" id="exampleModalCenterTitle">Submeter nova versão</h5>
+          <h5 class="modal-title" id="exampleModalCenterTitle">Submeter versão final do trabalho</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -33,7 +33,7 @@
                 <input type="hidden" name="trabalhoId" value="{{$trabalho->id}}" id="trabalhoNovaVersaoId">
                 
                 {{-- Arquivo  --}}
-                <label for="nomeTrabalho" class="col-form-label">{{ __('Novo arquivo para ') }}{{$trabalho->titulo}}</label>
+                <label for="nomeTrabalho" class="col-form-label">{{ __('Versão final de ') }}{{$trabalho->titulo}}</label>
 
                 <div class="custom-file">
                   <input type="file" class="filestyle" data-placeholder="Nenhum arquivo" data-text="Selecionar" data-btnClass="btn-primary-lmts" name="arquivo">
@@ -107,7 +107,7 @@
                   <th>ID</th>
                   <th>Título</th>
                   <th style="text-align:center">Baixar</th>
-                  <th style="text-align:center">Editar</th>
+                  <th style="text-align:center">Editar/Versão final</th>
                   <th style="text-align:center">Excluir</th>
               </tr>
               </thead>
@@ -118,14 +118,25 @@
                   <td>{{$trabalho->id}}</td>
                   <td>{{$trabalho->titulo}}</td>
                   <td style="text-align:center">
-                      <a href="{{route('downloadTrabalho', ['id' => $trabalho->id])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                      <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
                           <img class="" src="{{asset('img/icons/file-download-solid.svg')}}" style="width:20px">
                       </a>
+                      @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)
+                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                          <img class="" src="{{asset('img/icons/file-download-solid-primary-color.svg')}}" style="width:26px">
+                        </a>
+                      @endif
                   </td>
                   <td style="text-align:center">
+                    @if ($trabalho->avaliado != "Avaliado")
                       <a href="#" @if($agora <= $trabalho->modalidade->fimSubmissao) data-toggle="modal" data-target="#modalEditarTrabalho_{{$trabalho->id}}" style="color:#114048ff" @else data-toggle="popover" data-placement="bottom" title="Não permitido" data-content="A edição do trabalho só é permitida durante o periodo de submissão." @endif>
                         <img class="" src="{{asset('img/icons/file-upload-solid.svg')}}" style="width:20px">
                       </a>
+                    @else 
+                      <a href="#" data-toggle="modal" data-target="#modalTrabalho_{{$trabalho->id}}" style="color:#114048ff">
+                        <img class="" src="{{asset('img/icons/file-upload-solid.svg')}}" style="width:20px">
+                      </a>
+                    @endif
                   </td>
                   <td style="text-align:center">
                     <a href="#" @if($agora <= $trabalho->modalidade->fimSubmissao) data-toggle="modal" data-target="#modalExcluirTrabalho_{{$trabalho->id}}" style="color:#114048ff" @else data-toggle="popover" data-placement="bottom" title="Não permitido" data-content="A exclusão do trabalho só é permitida durante o periodo de submissão." @endif>
@@ -170,9 +181,14 @@
                     <td>{{$trabalho->titulo}}</td>
                     <td>{{$trabalho->autor->name}}</td>
                     <td style="text-align:center">
-                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
-                            <img class="" src="{{asset('img/icons/file-download-solid.svg')}}" style="width:20px">
+                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                          <img class="" src="{{asset('img/icons/file-download-solid.svg')}}" style="width:20px">
                         </a>
+                        @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)
+                          <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                            <img class="" src="{{asset('img/icons/file-download-solid-primary-color.svg')}}" style="width:20px">
+                          </a>
+                        @endif
                     </td>
                   </tr>
               @endforeach
@@ -392,7 +408,7 @@
                     @if ($modalidade->arquivo == true)
                       <div class="col-sm-12" style="margin-top: 20px;">
                         <label for="nomeTrabalho" class="col-form-label">{{$formSubTraba->etiquetauploadtrabalho}}:</label>
-                          <a href="{{route('downloadTrabalho', ['id' => $trabalho->id])}}">Arquivo atual</a>
+                          <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}">Arquivo atual</a>
                         <br>
                         <small>Para trocar o arquivo envie um novo.</small>
                         <div class="custom-file">
@@ -675,7 +691,7 @@
 @endsection
 
 @section('javascript')
-@if(old('trabalhoEditId')) 
+@if(old('trabalhoEditId') != null) 
   <script>
     $(document).ready(function() {
       $('#modalEditarTrabalho_{{old('trabalhoEditId')}}').modal('show');
@@ -683,6 +699,13 @@
   </script>
 @endif
 
+@if (old('trabalhoId') != null)
+  <script>
+    $(document).ready(function() {
+      $('#modalTrabalho_{{old('trabalhoId')}}').modal('show');
+    })
+  </script>
+@endif
 <script>
   function montarLinhaInput(div, id){
 

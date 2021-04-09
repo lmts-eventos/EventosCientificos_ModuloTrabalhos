@@ -560,6 +560,8 @@ class TrabalhoController extends Controller
         $nome = $request->file('arquivo'.$id)->getClientOriginalName();
         Storage::putFileAs($path, $file, $nome);
 
+        // TODO Arquivos são salvos como true enquanto o trabalho não for 
+        // atribuido e revisado por algum revisor cadastrado pelo dono do evento
         $arquivo = Arquivo::create([
           'nome'  => $path . $nome,
           'trabalhoId'  => $trabalho->id,
@@ -695,43 +697,46 @@ class TrabalhoController extends Controller
       ]);
 
       // dd($validatedData);
-      if($modalidade->inicioSubmissao > $mytime){
-        if($mytime >= $modalidade->fimSubmissao){
-          return redirect()->back()->withErrors(['error' => 'O periodo de submissão para esse trabalho se encerrou.']);
-        }
-      }
+      // if($modalidade->inicioSubmissao > $mytime){
+      //   if($mytime >= $modalidade->fimSubmissao){
+      //     return redirect()->back()->withErrors(['error' => 'O periodo de submissão para esse trabalho se encerrou.']);
+      //   }
+      // }
 
-      if($this->validarTipoDoArquivo($request, $trabalho->modalidade)) {
+      if($this->validarTipoDoArquivo($request->arquivo, $trabalho->modalidade)) {
         return redirect()->back()->withErrors(['tipoExtensao' => 'Extensão de arquivo enviado é diferente do permitido.
           Verifique no formulário, quais os tipos permitidos.', 'trabalhoId' => $trabalho->id]);
       }
-
-      dd($modalidade);
 
       if(Auth::user()->id != $trabalho->autorId){
         return abort(403);
       }
 
-      $arquivos = $trabalho->arquivo;
-      $count = 1;
-      foreach ($arquivos as $key) {
-        $key->versaoFinal = false;
-        $key->save();
-        $count++;
+      // TODO arquivos finals são marcados como false
+      // Se já existir algum ele é excluido
+      $arquivos = $trabalho->arquivo()->where('versaoFinal', false)->get();
+      if ($arquivos != null && $arquivos->count() > 0) {
+        foreach ($arquivos as $arq) {
+          if (Storage::disk()->exists($arq->nome)) {
+            Storage::delete($arq->nome);
+            $arq->delete();
+          }
+        }
       }
 
+      // E criado um novo com o arquivo enviado
       $file = $request->arquivo;
       $path = 'trabalhos/' . $request->eventoId . '/' . $trabalho->id .'/';
-      $nome = $count . ".pdf";
+      $nome = $request->arquivo->getClientOriginalName();
       Storage::putFileAs($path, $file, $nome);
 
       $arquivo = Arquivo::create([
         'nome'  => $path . $nome,
         'trabalhoId'  => $trabalho->id,
-        'versaoFinal' => true,
+        'versaoFinal' => false,
       ]);
 
-      return redirect()->route('evento.visualizar',['id'=>$request->eventoId]);
+      return redirect()->back()->with(['mensagem' => $trabalho->titulo . ' versão final salva!']);
     }
 
     public function detalhesAjax(Request $request){
@@ -792,29 +797,48 @@ class TrabalhoController extends Controller
     }
 
     //função para download do arquivo do trabalho
-    public function downloadArquivo($id) {
+    public function downloadArquivo($id, $check) {
       $trabalho = Trabalho::find($id);
       $revisor = Revisor::where([['evento_id', '=', $trabalho->eventoId], ['user_id', '=', auth()->user()->id]])->first();
       $user = User::find(auth()->user()->id);
-
-      /*
+      
+      /* TODO
         O usuário só tera permissão para baixar o arquivo se for revisor do trabalho
         ou se for coordenador do evento, coordenador da comissão, se pertencer a comissão
         do evento ou se for autor do trabalho.
+
+        Se o trabalho foi avaliado e o arquivo corrigido foi enviado o arquivo 
+        baixado será a versão final.
+        Se não foi será o ultimo arquivo.
       */
-      $arquivo = $trabalho->arquivo()->where('versaoFinal', true)->first();
+
+      $arquivo = null;
+      $arquivo = $trabalho->arquivo()->where('versaoFinal', false)->first();
+      if ($check && $arquivo != null) {
+        $arquivo = $trabalho->arquivo()->where('versaoFinal', false)->first();
+      } else {
+        $arquivo = $trabalho->arquivo()->where('versaoFinal', true)->first();
+      }
 
       if ($trabalho->evento->coordenadorId == auth()->user()->id || $trabalho->evento->coordComissaoId == auth()->user()->id || $trabalho->autorId == auth()->user()->id) {
         // dd();
         if (Storage::disk()->exists($arquivo->nome)) {
-          return Storage::download($arquivo->nome,  $trabalho->titulo . "." . explode(".", $arquivo->nome)[1]);
+          if ($arquivo->versaoFinal) {
+            return Storage::download($arquivo->nome,  $trabalho->titulo . "." . explode(".", $arquivo->nome)[1]);
+          } else {
+            return Storage::download($arquivo->nome,  $trabalho->titulo . "- corrigido." . explode(".", $arquivo->nome)[1]);
+          }
         }
         return abort(404);
 
       } else if ($revisor != null) {
         if ($revisor->trabalhosAtribuidos->contains($trabalho)) {
           if (Storage::disk()->exists($arquivo->nome)) {
-            return Storage::download($arquivo->nome,  $trabalho->titulo . "." . explode(".", $arquivo->nome)[1]);
+            if ($arquivo->versaoFinal) {
+              return Storage::download($arquivo->nome,  $trabalho->titulo . "." . explode(".", $arquivo->nome)[1]);
+            } else {
+              return Storage::download($arquivo->nome,  $trabalho->titulo . "- corrigido." . explode(".", $arquivo->nome)[1]);
+            }
           }
           return abort(404);
         }
@@ -859,7 +883,8 @@ class TrabalhoController extends Controller
           'nome'        => $trab->autor->name,
           'area'        => $trab->area->nome,
           'modalidade'  => $trab->modalidade->nome,
-          'rota_download' => !(empty($trab->arquivo->nome)) ? route('downloadTrabalho', ['id' => $trab->id]) : '#',
+          'rota_download' => $trab->arquivo()->where('versaoFinal', true)->first() != null ? route('downloadTrabalho', ['id' => $trab->id, 'check' => 0]) : '#',
+          'rota_download_corrigido' => $trab->arquivo()->where('versaoFinal', false)->first() != null ? route('downloadTrabalho', ['id' => $trab->id, 'check' => 1]) : '#',
         ];
         $trabalhoJson->push($trabalho);
       }

@@ -68,7 +68,12 @@
                               </td>
                               <td>
                                 @if ($trabalho->arquivo != null && $trabalho->arquivo->count() > 0)
-                                  <a href="{{route('downloadTrabalho', ['id' => $trabalho->id])}}"><img src="{{asset('img/icons/file-download-solid-black.svg')}}" style="width:20px"></a>
+                                  <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}"><img src="{{asset('img/icons/file-download-solid-black.svg')}}" style="width:20px"></a>
+                                @endif
+                                @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)
+                                  <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                                    <img class="" src="{{asset('img/icons/file-download-solid-primary-color.svg')}}" style="width:28px; position: relative; top: 1px;">
+                                  </a>
                                 @endif
                               </td>
                               @if ($trabalho->avaliado != "Avaliado")
@@ -95,11 +100,6 @@
                                   </td>
                                 @endif
                                 {{-- {{$trabalho->atribuicoes()->where('user_id', auth()->user()->id)->first()->id}} --}}
-                                <td>
-                                  
-                                  
-                                
-                                </td>
                               @else
                               <td>
                                 <img src="{{asset('img/icons/check-solid.svg')}}" style="width:20px" title="Trabalho já avaliado">
