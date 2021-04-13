@@ -118,7 +118,7 @@
                   <td>{{$trabalho->id}}</td>
                   <td>{{$trabalho->titulo}}</td>
                   <td style="text-align:center">
-                      <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                      <a href="{{route('visualizar.arquivo.trabalho', ['id' => $trabalho->id, 'check' => 0])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
                           <img class="" src="{{asset('img/icons/file-download-solid.svg')}}" style="width:20px">
                       </a>
                       @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)

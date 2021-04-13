@@ -726,7 +726,7 @@ class TrabalhoController extends Controller
 
       // E criado um novo com o arquivo enviado
       $file = $request->arquivo;
-      $path = 'trabalhos/' . $request->eventoId . '/' . $trabalho->id .'/';
+      $path = 'trabalhos/' . $evento->id . '/' . $trabalho->id .'/';
       $nome = $request->arquivo->getClientOriginalName();
       Storage::putFileAs($path, $file, $nome);
 
@@ -824,9 +824,9 @@ class TrabalhoController extends Controller
         // dd();
         if (Storage::disk()->exists($arquivo->nome)) {
           if ($arquivo->versaoFinal) {
-            return Storage::download($arquivo->nome,  $trabalho->titulo . "." . explode(".", $arquivo->nome)[1]);
+            return Storage::download($arquivo->nome);
           } else {
-            return Storage::download($arquivo->nome,  $trabalho->titulo . "- corrigido." . explode(".", $arquivo->nome)[1]);
+            return Storage::download($arquivo->nome);
           }
         }
         return abort(404);
@@ -835,9 +835,9 @@ class TrabalhoController extends Controller
         if ($revisor->trabalhosAtribuidos->contains($trabalho)) {
           if (Storage::disk()->exists($arquivo->nome)) {
             if ($arquivo->versaoFinal) {
-              return Storage::download($arquivo->nome,  $trabalho->titulo . "." . explode(".", $arquivo->nome)[1]);
+              return Storage::download($arquivo->nome);
             } else {
-              return Storage::download($arquivo->nome,  $trabalho->titulo . "- corrigido." . explode(".", $arquivo->nome)[1]);
+              return Storage::download($arquivo->nome);
             }
           }
           return abort(404);
@@ -982,5 +982,26 @@ class TrabalhoController extends Controller
         }
         return false;
       }
+    }
+
+    public function visualizarArquivoTrabalho($id, $check) {
+      $trabalho = Trabalho::find($id);
+      $arquivo = $trabalho->arquivo()->where('versaoFinal', true)->first();
+      /* 
+        TODO Criando arquivo temporário 
+        é checado se já existe algum para evitar 
+        que o repositorio fique cheio
+      */
+      
+      // Storage::deleteDirectory("public/tmp");
+
+      if (Storage::disk()->exists("public/tmp/" . $arquivo->nome)) {
+        Storage::delete("public/tmp/" . $arquivo->nome);
+      }
+      Storage::copy($arquivo->nome, 'public/tmp/'.$arquivo->nome);
+
+      $caminho = 'storage/tmp/'.$arquivo->nome;
+
+      return view('teste')->with(['caminho' => $caminho]);
     }
 }
