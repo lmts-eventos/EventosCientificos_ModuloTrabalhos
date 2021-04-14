@@ -118,11 +118,11 @@
                   <td>{{$trabalho->id}}</td>
                   <td>{{$trabalho->titulo}}</td>
                   <td style="text-align:center">
-                      <a href="{{route('visualizar.arquivo.trabalho', ['id' => $trabalho->id, 'check' => 0])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                      <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" target="_blank" style="font-size: 20px; color: #114048ff;" title="Versão atual">
                           <img class="" src="{{asset('img/icons/file-download-solid.svg')}}" style="width:20px">
                       </a>
                       @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)
-                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_blank" style="font-size: 20px; color: #114048ff;" title="Versão corrigida">
                           <img class="" src="{{asset('img/icons/file-download-solid-primary-color.svg')}}" style="width:26px">
                         </a>
                       @endif
@@ -181,11 +181,11 @@
                     <td>{{$trabalho->titulo}}</td>
                     <td>{{$trabalho->autor->name}}</td>
                     <td style="text-align:center">
-                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                        <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" target="_blank" style="font-size: 20px; color: #114048ff;" title="Versão atual">
                           <img class="" src="{{asset('img/icons/file-download-solid.svg')}}" style="width:20px">
                         </a>
                         @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)
-                          <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                          <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_blank" style="font-size: 20px; color: #114048ff;" title="Versão corrigida">
                             <img class="" src="{{asset('img/icons/file-download-solid-primary-color.svg')}}" style="width:20px">
                           </a>
                         @endif

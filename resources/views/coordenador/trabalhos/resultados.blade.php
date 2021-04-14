@@ -182,10 +182,10 @@
                         <p id="modalidade">{{$trabalho->modalidade->nome}}</p>
                         <a href="#" class="card-link" data-toggle="modal" data-target="#modalResultados{{$trabalho->id}}">Resultado</a>
                         @if ($trabalho->arquivo()->where('versaoFinal', true)->first() != null)
-                            <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" class="card-link">Baixar</a>
+                            <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" class="card-link" target="_blank">Baixar</a>
                         @endif
                         @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)
-                            <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" class="card-link">Baixar corrigido</a>
+                            <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" class="card-link" target="_blank">Baixar corrigido</a>
                         @endif
                     </div>
                 </div>

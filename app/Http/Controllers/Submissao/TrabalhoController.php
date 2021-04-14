@@ -821,23 +821,31 @@ class TrabalhoController extends Controller
       }
 
       if ($trabalho->evento->coordenadorId == auth()->user()->id || $trabalho->evento->coordComissaoId == auth()->user()->id || $trabalho->autorId == auth()->user()->id) {
-        // dd();
-        if (Storage::disk()->exists($arquivo->nome)) {
-          if ($arquivo->versaoFinal) {
-            return Storage::download($arquivo->nome);
-          } else {
-            return Storage::download($arquivo->nome);
+        // dd(explode(".", $arquivo->nome)[1] == "pdf");
+        if (explode(".", $arquivo->nome)[1] == "pdf") {
+          return $this->visualizarArquivoTrabalho($trabalho->id, $check);
+        } else {
+          if (Storage::disk()->exists($arquivo->nome)) {
+            if ($arquivo->versaoFinal) {
+              return Storage::download($arquivo->nome);
+            } else {
+              return Storage::download($arquivo->nome);
+            }
           }
         }
         return abort(404);
 
       } else if ($revisor != null) {
         if ($revisor->trabalhosAtribuidos->contains($trabalho)) {
-          if (Storage::disk()->exists($arquivo->nome)) {
-            if ($arquivo->versaoFinal) {
-              return Storage::download($arquivo->nome);
-            } else {
-              return Storage::download($arquivo->nome);
+          if (explode(".", $arquivo->nome)[1] == "pdf") {
+            $this->visualizarArquivoTrabalho($trabalho->id, $check);
+          } else {
+            if (Storage::disk()->exists($arquivo->nome)) {
+              if ($arquivo->versaoFinal) {
+                return Storage::download($arquivo->nome);
+              } else {
+                return Storage::download($arquivo->nome);
+              }
             }
           }
           return abort(404);
@@ -986,7 +994,15 @@ class TrabalhoController extends Controller
 
     public function visualizarArquivoTrabalho($id, $check) {
       $trabalho = Trabalho::find($id);
+      
+      $arquivoFinal = null;
       $arquivo = $trabalho->arquivo()->where('versaoFinal', true)->first();
+      $arquivoFinal = $trabalho->arquivo()->where('versaoFinal', false)->first();
+
+      if ($check && $arquivo != null) {
+        $arquivo = $arquivoFinal;
+      }
+
       /* 
         TODO Criando arquivo temporário 
         é checado se já existe algum para evitar 
@@ -1002,6 +1018,6 @@ class TrabalhoController extends Controller
 
       $caminho = 'storage/tmp/'.$arquivo->nome;
 
-      return view('teste')->with(['caminho' => $caminho]);
+      return redirect(asset($caminho));
     }
 }

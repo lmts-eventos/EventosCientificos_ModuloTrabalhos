@@ -68,10 +68,10 @@
                               </td>
                               <td>
                                 @if ($trabalho->arquivo != null && $trabalho->arquivo->count() > 0)
-                                  <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}"><img src="{{asset('img/icons/file-download-solid-black.svg')}}" style="width:20px"></a>
+                                  <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 0])}}" title="Versão atual" target="_blank"><img src="{{asset('img/icons/file-download-solid-black.svg')}}" style="width:20px"></a>
                                 @endif
                                 @if ($trabalho->arquivo()->where('versaoFinal', false)->first() != null)
-                                  <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_new" style="font-size: 20px; color: #114048ff;" >
+                                  <a href="{{route('downloadTrabalho', ['id' => $trabalho->id, 'check' => 1])}}" target="_blank" style="font-size: 20px; color: #114048ff;" title="Versão corrigida">
                                     <img class="" src="{{asset('img/icons/file-download-solid-primary-color.svg')}}" style="width:28px; position: relative; top: 1px;">
                                   </a>
                                 @endif

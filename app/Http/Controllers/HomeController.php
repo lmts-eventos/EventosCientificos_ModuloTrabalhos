@@ -91,6 +91,8 @@ class HomeController extends Controller
       
       $tiposEvento = Evento::where([['publicado', '=', true], ['deletado', '=', false]])->where([['dataInicio', '<=', today()], ['dataFim', '>=', today()]])->selectRaw('DISTINCT tipo')->get();
       
+      $this->excluirArquivoTemporarios();
+      
       return view('index',['eventos'=>$eventos, 'tipos' => $tiposEvento, 'proximosEventos' => $proximosEventos]);
     }
 }
